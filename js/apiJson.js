@@ -19,7 +19,6 @@ $( document ).ready( domPutShirts() );
 
 $("div").on("click", "i#deletelink", function(e){
     e.stopImmediatePropagation();
-    console.log('clicked');
     deleteShirt($(this).parent().parent().prop('id'));
 });
 
