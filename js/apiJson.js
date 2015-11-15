@@ -1,3 +1,9 @@
+jQuery.fn.fadeOutAndRemove = function(speed){
+    $(this).fadeOut(speed,function(){
+        $(this).remove();
+    })
+}
+
 jQuery.fn.outerHTML = function(s) {
     return (s)
         ? this.before(s).remove()
@@ -5,23 +11,30 @@ jQuery.fn.outerHTML = function(s) {
 }
 
 var colors;
+var apiurl = 'http://localhost:8000/api/';
 
 $( document ).ready( getColors() );
 
-$( document ).ready( ajaxShirts() );
+$( document ).ready( domPutShirts() );
+
+$("div").on("click", "i#deletelink", function(e){
+    e.stopImmediatePropagation();
+    console.log('clicked');
+    deleteShirt($(this).parent().parent().prop('id'));
+});
 
 $(function(){
     $('#apigetbtn').on('click', function(e) {
         e.preventDefault();
-        ajaxShirts()
+        domPutShirts()
     });
     $('.shirtlink').on('click', function(e) {
         e.preventDefault();
-        ajaxSingleShirt(e.id);
+        getShirt(e.id);
     });
 });
 
-function ajaxShirts() {
+function domPutShirts() {
     var url = 'http://localhost:8000/api/shirts';
 
     $.ajax({
@@ -44,11 +57,22 @@ function ajaxShirts() {
     });
 }
 
-function ajaxSingleShirt(id) {
-    var url = 'http://localhost:8000/api/shirts/';
-
+function deleteShirt(id) {
     $.ajax({
-        url: url + id,
+        url: apiurl + 'shirts/' + id,
+        type: 'delete',
+        success: function(data) {
+            $("#" + id).fadeOutAndRemove('slow');
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            console.log(textStatus, errorThrown);
+        },
+    });
+}
+
+function getShirt(id) {
+    $.ajax({
+        url: apiurl + 'shirts/' + id,
         data: {
             format: 'json'
         },
@@ -72,10 +96,8 @@ function clearShirts(){
 }
 
 function getColors() {
-    var url = 'http://localhost:8000/api/colors/';
-
     $.ajax({
-        url: url,
+        url: apiurl + 'colors/',
         data: {
             format: 'json'
         },
@@ -87,7 +109,6 @@ function getColors() {
         //async: false,
         success: function(data) {
             colors = data;
-            console.log(colors);
         },
         type: 'GET'
     });
@@ -101,7 +122,9 @@ function putShirt(shirt) {
                     "<img src=\"http://localhost:8000/images/" + shirt.photo + "\" class=\"activator\">" +
                 "</div>" +
                 "<div class=\"card-content\">"+
-                    "<span class=\"card-title activator grey-text text-darken-4\">" + shirt.name + "<i class=\"material-icons right\">more_vert</i></span>"+
+                    "<span class=\"card-title activator grey-text text-darken-4\">" + shirt.name +
+                    "<i class=\"material-icons right\">more_vert</i></span>"+
+                    "<i class=\"material-icons right\" id=\"deletelink\">delete</i>"+
                 "</div>"+
                 "<div class=\"card-reveal\">"+
                     "<span class=\"card-title grey-text text-darken-4\">" + shirt.name + "<i class=\"material-icons right\">close</i></span>"+
